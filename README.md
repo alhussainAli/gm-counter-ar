@@ -17,3 +17,7 @@ Works in Safari on iPhone and Chrome on Android. The camera needs HTTPS, which G
 - `GM-Counter-AR-marker-sheet.pdf` – printable sheet with QR code and marker
 
 All sources and rates are simulated for teaching. No radioactive material is involved.
+
+## Also in this repository
+
+**[Gamma Spectroscopy AR](gamma/)**: HPGe vs NaI(Tl), from gamma photon to energy spectrum. Live at https://alhussainali.github.io/gm-counter-ar/gamma/

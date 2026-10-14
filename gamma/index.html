@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Gamma Spectroscopy AR</title>
+<meta name="description" content="Augmented-reality lab: how HPGe and NaI(Tl) detectors turn gamma rays into an energy spectrum.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- ============================ start screen ============================ -->
+<section id="start">
+  <div class="st">
+    <div class="brand">
+      <img src="../kacst-logo.png" alt="KACST" onerror="this.hidden=true">
+      <div class="by"><small>Developed by</small><b>Dr. Alhussain Abuhoza</b></div>
+    </div>
+    <span class="tag">EDUCATIONAL SIMULATION · NO REAL SOURCE</span>
+    <h1>Gamma Spectroscopy <span>AR</span></h1>
+    <p class="lead">Follow a gamma photon into an HPGe or NaI(Tl) detector, watch it become an electrical pulse, and see where it lands in the energy spectrum. Then build full spectra and compare the two detectors.</p>
+    <div class="choices">
+      <button class="go" id="go-xr" type="button" hidden>
+        <b>AR on a table</b><span>Android · Chrome. Finds a flat surface with the camera.</span></button>
+      <button class="go alt" id="go-marker" type="button">
+        <b>AR with the printed marker</b><span>iPhone and Android. Uses the Hiro marker sheet.</span></button>
+      <button class="go alt" id="go-3d" type="button">
+        <b>3D view</b><span>Any device, no camera. Drag to rotate, pinch or scroll to zoom.</span></button>
+    </div>
+    <p class="note" id="xr-note">Surface AR needs a phone browser with WebXR (Chrome on Android). On iPhone, use the marker or the 3D view.</p>
+    <details class="mk"><summary>Need the marker?</summary>
+      <img src="../hiro.png" alt="Hiro AR marker" width="200" height="200">
+      <small>Print it (the GM Counter sheet works too) or show it on a second screen, at least 8 cm wide.</small>
+    </details>
+    <p class="note">Animations are slowed down by about a billion times. Real gamma radiation is invisible.</p>
+  </div>
+</section>
+
+<!-- ============================ app ============================ -->
+<div id="app" hidden>
+  <header class="top">
+    <div class="tl">
+      <img class="logo" src="../kacst-logo.png" alt="KACST" onerror="this.hidden=true">
+      <div class="tt"><b>Gamma Spectroscopy AR</b><small>Dr. Alhussain Abuhoza</small></div>
+    </div>
+    <div class="seg" id="mode" role="group" aria-label="Mode">
+      <button type="button" data-v="follow">Follow one photon</button>
+      <button type="button" data-v="build">Build a spectrum</button>
+    </div>
+    <div class="seg" id="det" role="group" aria-label="Detector">
+      <button type="button" data-v="hpge"><i class="sw hpge"></i>HPGe</button>
+      <button type="button" data-v="nai"><i class="sw nai"></i>NaI(Tl)</button>
+      <button type="button" data-v="both">Compare</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <section id="stage" aria-label="3D detector view">
+      <div id="gl"></div>
+      <div id="gest"></div>
+      <div class="ov tl-ov">
+        <span class="chip warn">Slowed ~10⁹× · radiation is invisible</span>
+        <span class="chip" id="trk" hidden><i></i><span id="trkt">Searching</span></span>
+      </div>
+      <div class="ov tr-ov">
+        <button type="button" class="ib" id="b-cut" aria-pressed="true" title="Transparent cutaway">Cutaway</button>
+        <button type="button" class="ib" id="b-lab" aria-pressed="true" title="Labels">Labels</button>
+        <button type="button" class="ib" id="b-zm" title="Enlarge">＋</button>
+        <button type="button" class="ib" id="b-zo" title="Shrink">－</button>
+        <button type="button" class="ib" id="b-reset" title="Reset view">Reset</button>
+        <button type="button" class="ib xr-only" id="b-place" hidden>Place here</button>
+        <button type="button" class="ib" id="b-exit" title="Leave AR">Exit</button>
+      </div>
+      <div class="ov bl-ov" id="xr-hint" hidden>Move the phone slowly over a table until the ring appears, then tap <b>Place here</b>.</div>
+      <div id="guide" class="guide" hidden>
+        <div class="gh"><b id="g-title"></b><span id="g-step"></span><button type="button" class="x" id="g-close" aria-label="Close guide">×</button></div>
+        <p id="g-text"></p>
+        <div class="gb"><button type="button" id="g-prev">Back</button><button type="button" id="g-next" class="pri">Next</button></div>
+      </div>
+    </section>
+
+    <section id="panel" aria-label="Controls and data">
+      <div class="sheet-handle"><button type="button" id="fold">Hide panel</button></div>
+      <nav class="tabs" role="tablist">
+        <button type="button" role="tab" data-tab="chain">Signal chain</button>
+        <button type="button" role="tab" data-tab="spec">Spectrum</button>
+        <button type="button" role="tab" data-tab="setup">Sources &amp; setup</button>
+        <button type="button" role="tab" data-tab="res">Resolution</button>
+        <button type="button" role="tab" data-tab="guides">Guided demos</button>
+        <button type="button" role="tab" data-tab="model">About the model</button>
+      </nav>
+
+      <!-- ---------------- signal chain ---------------- -->
+      <div class="tab" id="tab-chain">
+        <ol class="steps" id="steps">
+          <li data-s="0">Emission</li><li data-s="1">Interaction</li><li data-s="2">Detector signal</li><li data-s="3">Preamplifier</li>
+          <li data-s="4">Digitization</li><li data-s="5">Pulse processing</li><li data-s="6">Energy estimate</li><li data-s="7">Histogram</li>
+        </ol>
+        <div class="row wrap">
+          <label class="fld"><span>Detector</span><select id="f-det"><option value="hpge">HPGe</option><option value="nai">NaI(Tl)</option></select></label>
+          <label class="fld"><span>Gamma line</span><select id="f-line"></select></label>
+          <label class="fld"><span>Event type</span><select id="f-scen">
+            <option value="any">Random (as in nature)</option>
+            <option value="full">Full-energy absorption</option>
+            <option value="partial">Compton, photon escapes</option>
+            <option value="pair">Pair production (E &gt; 1022 keV)</option>
+            <option value="through">Passes through</option>
+          </select></label>
+        </div>
+        <div class="row">
+          <button type="button" class="pri" id="f-emit">Emit photon</button>
+          <button type="button" id="f-prev">◀ Back</button>
+          <button type="button" id="f-next">Next ▶</button>
+          <button type="button" id="f-auto" aria-pressed="false">Auto-play</button>
+          <button type="button" id="f-replay">Replay</button>
+        </div>
+        <div class="card stagecard"><h3 id="st-title">Emit a photon to begin</h3><p id="st-text">Choose a line and an event type, then press <b>Emit photon</b>. Step through the chain with <b>Next</b>.</p></div>
+
+        <div class="grid2 fit">
+          <div class="card"><h3>Energy bookkeeping</h3><div id="ledger" class="ledger"><p class="muted">No event yet.</p></div></div>
+          <div class="card"><h3 id="q-title">Detector signal</h3><div id="quanta" class="quanta"><p class="muted">No event yet.</p></div></div>
+        </div>
+
+        <div class="card">
+          <div class="ch"><h3>Preamplifier output, ADC samples and digital filter</h3>
+            <div class="seg sm" id="wz"><button type="button" data-v="all">Whole pulse</button><button type="button" data-v="edge">Rising edge</button></div></div>
+          <canvas id="cv-wave" class="cv" height="220" aria-label="Waveform: analog preamplifier output, ADC samples and trapezoidal filter output"></canvas>
+          <div class="legend">
+            <span><i style="background:var(--analog)"></i>Analog preamp output</span>
+            <span><i class="dotk" style="background:var(--digital)"></i>ADC samples (digital codes)</span>
+            <span><i style="background:var(--shaped)"></i>Trapezoidal filter output</span>
+            <span><i style="background:var(--amber)"></i>Energy sampled here</span>
+          </div>
+          <div class="ctlgrid">
+            <label class="fld"><span>Sampling rate</span><select id="c-fs"><option>10</option><option>25</option><option>50</option><option selected>100</option><option>250</option></select><em>MS/s</em></label>
+            <label class="fld"><span>ADC bit depth</span><select id="c-bits"><option>8</option><option>10</option><option>12</option><option selected>14</option><option>16</option></select><em>bits</em></label>
+            <label class="fld"><span>Gain (full scale)</span><input type="range" id="c-gain" min="500" max="6000" step="100" value="3000"><em id="c-gain-v">3000 keV</em></label>
+            <label class="fld"><span>Preamp noise <small id="c-noise-d">(HPGe)</small></span><input type="range" id="c-noise" min="0" max="40" step="0.2" value="4.4"><em id="c-noise-v">4.4 keV/sample</em></label>
+          </div>
+          <div class="readout" id="dsp-ro"></div>
+        </div>
+
+        <div class="card">
+          <div class="ch"><h3>Histogram: where this event lands</h3><span class="muted sm" id="mini-note"></span></div>
+          <canvas id="cv-mini" class="cv" height="170" aria-label="Spectrum with the bin that receives the event highlighted"></canvas>
+        </div>
+      </div>
+
+      <!-- ---------------- spectrum ---------------- -->
+      <div class="tab" id="tab-spec" hidden>
+        <div class="row wrap">
+          <button type="button" class="pri" id="s-run">Start acquisition</button>
+          <button type="button" id="s-clear">Clear</button>
+          <label class="fld in"><span>Speed</span><select id="s-speed"><option value="1">Real time</option><option value="10" selected>×10</option><option value="100">×100</option><option value="1000">Fastest</option></select></label>
+          <span class="clock" id="s-clock">0.0 s</span>
+        </div>
+        <div class="row wrap">
+          <div class="seg sm" id="s-scale"><button type="button" data-v="lin">Linear</button><button type="button" data-v="log">Log</button></div>
+          <div class="seg sm" id="s-lay"><button type="button" data-v="over">Overlay</button><button type="button" data-v="stack">Stacked</button></div>
+          <label class="chk"><input type="checkbox" id="s-norm"> Normalize (peak = 1)</label>
+          <label class="chk"><input type="checkbox" id="s-marks" checked> Line markers</label>
+        </div>
+        <canvas id="cv-spec" class="cv tall" height="320" aria-label="Energy spectrum, counts per bin versus energy in keV"></canvas>
+        <div class="row wrap zoomrow">
+          <span class="muted sm">Zoom</span>
+          <button type="button" class="zb" data-z="0,3000">Full</button>
+          <button type="button" class="zb" data-z="0,450">0–450</button>
+          <button type="button" class="zb" data-z="70,92">Ba-133 doublet</button>
+          <button type="button" class="zb" data-z="560,760">Cs-137 peak</button>
+          <button type="button" class="zb" data-z="1100,1400">Co-60 peaks</button>
+          <span class="zr"><label class="fld in"><span>from</span><input type="number" id="z0" value="0" step="1" min="0"></label>
+          <label class="fld in"><span>to</span><input type="number" id="z1" value="3000" step="1" min="1"></label><span class="muted sm">keV</span></span>
+        </div>
+        <p class="hint">Tap or click a peak to measure its FWHM. Drag across the plot to zoom in.</p>
+        <div class="grid2 fit">
+          <div class="card"><h3>Peak measurement</h3><div id="peak" class="peak"><p class="muted">Click a peak in the spectrum.</p></div></div>
+          <div class="card"><h3>Rates: activity ≠ emitted ≠ detected</h3><div id="rates" class="tablewrap"></div></div>
+        </div>
+        <div class="card"><h3>Full-energy peak efficiency (from the simulation)</h3><div id="eff" class="tablewrap"><p class="muted">Start an acquisition.</p></div>
+          <p class="hint">Efficiency is how many photons end up in the peak. Resolution is how narrow the peak is. They are separate properties: NaI(Tl) here is more efficient, HPGe resolves far better.</p></div>
+        <div class="card"><h3>Calibration</h3><div id="calib" class="calib"></div></div>
+      </div>
+
+      <!-- ---------------- setup ---------------- -->
+      <div class="tab" id="tab-setup" hidden>
+        <div class="card"><h3>Sources</h3><div id="srcs" class="srcs"></div>
+          <div id="two-ctl" class="ctlgrid" hidden>
+            <label class="fld"><span>Two-line centre</span><input type="range" id="t-c" min="60" max="1500" step="1" value="662"><em id="t-c-v">662 keV</em></label>
+            <label class="fld"><span>Separation ΔE</span><input type="range" id="t-d" min="0.2" max="80" step="0.1" value="4"><em id="t-d-v">4.0 keV</em></label>
+          </div></div>
+        <div class="card"><h3>Geometry and acquisition</h3>
+          <div class="ctlgrid">
+            <label class="fld"><span>Source to detector face</span><input type="range" id="g-dist" min="1" max="50" step="0.5" value="10"><em id="g-dist-v">10 cm</em></label>
+            <label class="fld"><span>Background flux</span><input type="range" id="g-bkg" min="0" max="5" step="0.05" value="0.3"><em id="g-bkg-v">0.30 γ/cm²/s</em></label>
+            <label class="fld"><span>Acquisition time (live)</span><select id="g-time"><option value="60">60 s</option><option value="300" selected>300 s</option><option value="1800">30 min</option><option value="3600">1 h</option><option value="0">Until stopped</option></select></label>
+            <label class="fld"><span>Trigger threshold</span><input type="range" id="g-thr" min="1" max="50" step="1" value="3"><em id="g-thr-v">3 keV</em></label>
+          </div>
+          <div class="row wrap">
+            <label class="chk"><input type="checkbox" id="g-pile" checked> Model pile-up and dead time</label>
+            <label class="chk"><input type="checkbox" id="g-pur"> Pile-up rejection</label>
+          </div></div>
+        <div class="card"><h3>Detector dimensions (illustrative)</h3>
+          <div class="ctlgrid">
+            <label class="fld"><span>HPGe diameter</span><input type="range" id="d-hd" min="3" max="9" step="0.1" value="6"><em id="d-hd-v">6.0 cm</em></label>
+            <label class="fld"><span>HPGe length</span><input type="range" id="d-hl" min="2" max="9" step="0.1" value="6"><em id="d-hl-v">6.0 cm</em></label>
+            <label class="fld"><span>NaI diameter</span><input type="range" id="d-nd" min="2.54" max="12.7" step="0.01" value="7.62"><em id="d-nd-v">7.62 cm (3″)</em></label>
+            <label class="fld"><span>NaI length</span><input type="range" id="d-nl" min="2.54" max="12.7" step="0.01" value="7.62"><em id="d-nl-v">7.62 cm (3″)</em></label>
+          </div>
+          <p class="hint">Bigger crystals catch more photons and keep more scattered photons inside, so efficiency and the photopeak fraction rise. Resolution does not change.</p></div>
+        <div class="card"><h3>Nuclear data used</h3><div id="ndata" class="tablewrap"></div>
+          <p class="hint">This is a <b>simplified line list</b> for teaching: the strongest γ and x-ray lines only. A complete decay scheme also includes weak transitions, conversion electrons, betas, and level energies. Data: DDEP / LNHB Recommended Data (<a href="http://www.lnhb.fr/home/nuclear-physics-data/" target="_blank" rel="noopener">lnhb.fr</a>).</p></div>
+      </div>
+
+      <!-- ---------------- resolution ---------------- -->
+      <div class="tab" id="tab-res" hidden>
+        <div class="card"><div class="ch"><h3>Energy resolution vs energy</h3>
+          <div class="seg sm" id="r-what"><button type="button" data-v="fwhm">FWHM (keV)</button><button type="button" data-v="r">R (%)</button></div></div>
+          <canvas id="cv-res" class="cv" height="220" aria-label="FWHM versus energy for both detectors"></canvas>
+          <p class="formula">R = FWHM / E<sub>peak</sub> × 100%</p>
+          <label class="fld wide"><span>Look at energy</span><input type="range" id="r-E" min="20" max="2800" step="1" value="662"><em id="r-E-v">662 keV</em></label>
+          <div id="r-terms" class="tablewrap"></div>
+          <p class="hint">All parameters are <b>illustrative defaults</b>, not values for a specific detector. Real resolution depends on crystal, electronics, temperature and count rate.</p>
+        </div>
+        <div class="grid2">
+          <div class="card"><h3><i class="sw hpge"></i>HPGe parameters</h3>
+            <label class="fld wide"><span>Fano factor F</span><input type="range" id="p-F" min="0.05" max="0.2" step="0.005" value="0.1"><em id="p-F-v">0.100</em></label>
+            <label class="fld wide"><span>Charge-collection term</span><input type="range" id="p-cc" min="0" max="0.0015" step="0.00005" value="0.00027"><em id="p-cc-v">2.7×10⁻⁴ E</em></label>
+            <label class="fld wide"><span>Preamp noise</span><input type="range" id="p-hn" min="0" max="40" step="0.2" value="4.4"><em id="p-hn-v">4.4 keV/sample</em></label>
+          </div>
+          <div class="card"><h3><i class="sw nai"></i>NaI(Tl) parameters</h3>
+            <label class="fld wide"><span>Photoelectrons per keV</span><input type="range" id="p-pe" min="1" max="12" step="0.1" value="5.7"><em id="p-pe-v">5.7</em></label>
+            <label class="fld wide"><span>Intrinsic term (FWHM)</span><input type="range" id="p-int" min="0" max="10" step="0.1" value="5.4"><em id="p-int-v">5.4 %</em></label>
+            <label class="fld wide"><span>PMT excess-noise factor</span><input type="range" id="p-enf" min="1" max="1.6" step="0.01" value="1.25"><em id="p-enf-v">1.25</em></label>
+            <label class="fld wide"><span>Preamp noise</span><input type="range" id="p-nn" min="0" max="40" step="0.2" value="2.4"><em id="p-nn-v">2.4 keV/sample</em></label>
+          </div>
+        </div>
+        <div class="row"><button type="button" id="p-reset">Reset to defaults</button></div>
+        <div class="card"><h3>Two close lines: when do peaks merge?</h3>
+          <div class="ctlgrid">
+            <label class="fld"><span>Centre energy</span><input type="range" id="tl-c" min="60" max="1500" step="1" value="662"><em id="tl-c-v">662 keV</em></label>
+            <label class="fld"><span>Separation ΔE</span><input type="range" id="tl-d" min="0.2" max="80" step="0.1" value="4"><em id="tl-d-v">4.0 keV</em></label>
+          </div>
+          <canvas id="cv-two" class="cv" height="190" aria-label="Expected line shapes of two close gamma lines for both detectors"></canvas>
+          <div id="tl-verdict" class="verdict"></div>
+          <div class="row"><button type="button" class="pri" id="tl-run">Acquire this as a spectrum</button></div>
+        </div>
+      </div>
+
+      <!-- ---------------- guides ---------------- -->
+      <div class="tab" id="tab-guides" hidden>
+        <div id="guides" class="guides"></div>
+      </div>
+
+      <!-- ---------------- model ---------------- -->
+      <div class="tab" id="tab-model" hidden>
+        <div class="card prose" id="model-text"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="js/boot.js"></script>
+</body>
+</html>
