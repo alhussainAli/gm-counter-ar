@@ -179,12 +179,15 @@ tr.sum td{border-top:1px solid #4a5a60;font-weight:600}
 body.ar,body.ar #app{background:transparent!important}
 body.ar #stage{background:transparent}
 body.ar .main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto}
-body.ar #panel{max-height:52vh;background:rgba(16,22,25,.9);border-left:0;border-top:1px solid var(--line);border-radius:14px 14px 0 0}
+body.ar #panel{max-height:40vh;background:rgba(16,22,25,.9);border-left:0;border-top:1px solid var(--line);border-radius:14px 14px 0 0}
 body.ar.folded #panel{max-height:none}
 body.ar.folded #panel .tabs,body.ar.folded #panel .tab{display:none!important}
 body.ar .sheet-handle{display:flex;justify-content:center;padding:6px 0 0}
 body.ar .sheet-handle button{padding:3px 14px;font-size:12px}
 body.ar .top{background:rgba(16,22,25,.86)}
 body.xr .xr-only{display:inline-block}
-body.marker a-scene,body.marker video{z-index:0!important}
+/* marker mode: AR.js puts the camera <video> at z-index -2 behind the transparent 3D canvas; keep it there */
+html.ar{background:transparent!important}
+body.marker #app{z-index:10}
+body.marker #app,body.marker .main,body.marker #stage{background:transparent!important}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}

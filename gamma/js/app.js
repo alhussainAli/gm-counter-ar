@@ -107,7 +107,7 @@ function autoCamera() { // follow mode: close-up on the crystal for interaction 
 function dolly(f) { const t = controls.target; camera.position.sub(t).multiplyScalar(f).add(t); }
 
 function hostXR() {
-  const T = THREE; document.body.classList.add('ar', 'xr');
+  const T = THREE; document.body.classList.add('ar', 'xr'); document.documentElement.classList.add('ar');
   renderer = new T.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(2, devicePixelRatio || 1)); renderer.outputEncoding = T.sRGBEncoding;
   renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local');
@@ -160,7 +160,7 @@ function hostXR() {
 }
 function applyARScale() { if (window.applyARScale) window.applyARScale(); }
 function hostMarker() {
-  document.body.classList.add('ar', 'marker');
+  document.body.classList.add('ar', 'marker'); document.documentElement.classList.add('ar');
   AFRAME.registerComponent('gamma-tick', { tick(t, dt) { tick(Math.min(0.1, (dt || 16) / 1000)); } });
   const wrap = document.createElement('div');
   wrap.innerHTML = `<a-scene embedded gamma-tick vr-mode-ui="enabled:false" renderer="logarithmicDepthBuffer:true;antialias:true;alpha:true;colorManagement:true"
@@ -172,7 +172,7 @@ function hostMarker() {
   const attach = () => { an.object3D.add(S3.root); applyMarkerScale(); };
   if (an.hasLoaded) attach(); else an.addEventListener('loaded', attach);
   window.applyARScale = applyMarkerScale;
-  function applyMarkerScale() { S3.root.scale.setScalar(st.userScale / 30); }
+  function applyMarkerScale() { S3.root.scale.setScalar(st.userScale / 75); } // ~80 cm bench ≈ 1 marker width
   $('#trk').hidden = false; $('#trkt').textContent = 'Point at the marker';
   mk.addEventListener('markerFound', () => { $('#trk').classList.add('ok'); $('#trkt').textContent = 'Marker locked'; });
   mk.addEventListener('markerLost', () => { $('#trk').classList.remove('ok'); $('#trkt').textContent = 'Point at the marker'; });
