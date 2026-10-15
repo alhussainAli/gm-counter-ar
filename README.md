@@ -21,3 +21,5 @@ All sources and rates are simulated for teaching. No radioactive material is inv
 ## Also in this repository
 
 **[Gamma Spectroscopy AR](gamma/)**: HPGe vs NaI(Tl), from gamma photon to energy spectrum. Live at https://alhussainali.github.io/gm-counter-ar/gamma/
+
+**[Radiation–Matter Interactions AR](interact/)**: e⁻, β⁻, p, α, n, γ and x-rays in air, water, polyethylene, aluminium, concrete and lead, down to atomic processes. Live at https://alhussainali.github.io/gm-counter-ar/interact/

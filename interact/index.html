@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Radiation–Matter Interactions AR</title>
+<meta name="description" content="Augmented-reality lab: how electrons, beta, protons, alphas, neutrons, gamma and x-rays ionize and excite air, water, lead and other materials, down to the atomic processes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<section id="start">
+  <div class="st">
+    <div class="brand">
+      <img src="../kacst-logo.png" alt="KACST" onerror="this.hidden=true">
+      <div class="by"><small>Developed by</small><b>Dr. Alhussain Abuhoza</b></div>
+    </div>
+    <span class="tag">EDUCATIONAL MONTE CARLO · NO REAL SOURCE</span>
+    <h1>Radiation–Matter <span>Interactions</span></h1>
+    <p class="lead">Fire electrons, beta particles, protons, alphas, neutrons, gamma rays or x-rays into air, water, polyethylene, aluminium, concrete or lead. Watch every ionization and excitation along the track, then zoom into single atoms to see how each process works.</p>
+    <div class="choices">
+      <button class="go" id="go-xr" type="button" hidden><b>AR on a table</b><span>Android · Chrome. Finds a flat surface with the camera.</span></button>
+      <button class="go alt" id="go-marker" type="button"><b>AR with the printed marker</b><span>iPhone and Android. Uses the Hiro marker sheet.</span></button>
+      <button class="go alt" id="go-3d" type="button"><b>3D view</b><span>Any device, no camera. Drag to rotate, pinch or scroll to zoom.</span></button>
+    </div>
+    <p class="note" id="xr-note">Surface AR needs Chrome on Android. On iPhone, use the marker or the 3D view.</p>
+    <details class="mk"><summary>Need the marker?</summary>
+      <img src="../hiro.png" alt="Hiro AR marker" width="200" height="200">
+      <small>The same Hiro marker as the other labs. Print it, or show it on a second screen at least 8 cm wide.</small>
+    </details>
+    <p class="note">Tracks are slowed down by about a billion times. Real radiation is invisible; the dots stand for ionized and excited atoms.</p>
+  </div>
+</section>
+
+<div id="app" hidden>
+  <header class="top">
+    <div class="tl">
+      <img class="logo" src="../kacst-logo.png" alt="KACST" onerror="this.hidden=true">
+      <div class="tt"><b>Radiation–Matter Interactions</b><small>Dr. Alhussain Abuhoza</small></div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section id="stage" aria-label="3D simulation on a black stage">
+      <div id="gl"></div>
+      <div id="gest"></div>
+      <div class="ov tl-ov">
+        <span class="chip warn">Slowed ~10⁹× · not to scale in time</span>
+        <span class="chip" id="trk" hidden><i></i><span id="trkt">Searching</span></span>
+      </div>
+      <div class="ov tr-ov">
+        <button type="button" class="ib" id="b-lab" aria-pressed="true">Labels</button>
+        <button type="button" class="ib" id="b-pip" aria-pressed="true">Atom view</button>
+        <button type="button" class="ib" id="b-zm">＋</button>
+        <button type="button" class="ib" id="b-zo">－</button>
+        <button type="button" class="ib" id="b-reset">Reset</button>
+        <button type="button" class="ib xr-only" id="b-place" hidden>Place here</button>
+        <button type="button" class="ib" id="b-exit">Exit</button>
+      </div>
+      <div class="ov bl-ov" id="xr-hint" hidden>Move the phone slowly over a table until the ring appears, then tap <b>Place here</b>.</div>
+      <div id="pip"><canvas id="atom-pip" aria-label="Atomic close-up of the selected interaction"></canvas></div>
+    </section>
+
+    <section id="panel" aria-label="Controls and data">
+      <div class="sheet-handle"><button type="button" id="fold">Hide panel</button></div>
+      <div class="ctlbar">
+        <div><div class="lbl2 fld"><span>Radiation</span></div><div class="chips" id="rad"></div></div>
+        <div><div class="fld"><span>Material</span></div><div class="chips" id="mat"></div></div>
+        <div id="energy-ctl"></div>
+        <div class="runrow">
+          <button type="button" class="pri" id="fire">Fire one</button>
+          <button type="button" id="beam" aria-pressed="false">Beam</button>
+          <button type="button" id="clear">Clear</button>
+          <label class="fld in"><span>Slow-mo</span><input type="range" id="speed" min="0.15" max="2" step="0.05" value="1"></label>
+          <label class="fld in"><span>Thickness</span><input type="range" id="thick" min="-1.2" max="1.2" step="0.05" value="0"></label>
+        </div>
+        <div class="row wrap">
+          <label class="chk"><input type="checkbox" id="t-ion" checked> <i class="sw" style="background:var(--ion);border-radius:50%"></i>Ionizations</label>
+          <label class="chk"><input type="checkbox" id="t-exc" checked> <i class="sw" style="background:var(--exc);border-radius:50%"></i>Excitations</label>
+          <label class="chk"><input type="checkbox" id="t-sec" checked> Secondaries</label>
+          <label class="chk"><input type="checkbox" id="t-cher" checked> <i class="sw" style="background:var(--cher);border-radius:50%"></i>Cherenkov light</label>
+        </div>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button type="button" role="tab" data-tab="events">Interactions</button>
+        <button type="button" role="tab" data-tab="atom">Atomic view</button>
+        <button type="button" role="tab" data-tab="dose">Depth dose &amp; tallies</button>
+        <button type="button" role="tab" data-tab="data">Physics data</button>
+        <button type="button" role="tab" data-tab="about">About the model</button>
+      </nav>
+
+      <div class="tab" id="tab-events">
+        <div class="card"><h3>This history</h3><div id="hsum" class="kvs"></div></div>
+        <div class="card"><div class="ch"><h3>Interactions in order</h3><span class="muted sm">Tap one to see it at atomic scale</span></div>
+          <div id="evlist" class="evlist"><p class="muted">Press <b>Fire one</b>.</p></div></div>
+        <div class="card"><h3>Colour key</h3><div class="legend2" id="legend"></div></div>
+      </div>
+
+      <div class="tab" id="tab-atom" hidden>
+        <canvas id="atom-big" aria-label="Large atomic close-up"></canvas>
+        <div class="card"><h3 id="a-title">Atomic close-up</h3><p class="desc" id="a-desc">Fire a particle, then pick an interaction.</p><div id="a-kv" class="kvs"></div></div>
+        <div class="card"><h3>What happens to the atom afterwards</h3><div id="a-relax" class="desc"></div></div>
+        <div class="row wrap"><button type="button" id="a-prev">◀ Previous event</button><button type="button" id="a-next">Next event ▶</button>
+          <label class="fld in"><span>Show</span><select id="a-filter"><option value="key">Key interactions + samples</option><option value="all">All, in time order</option><option value="ion">Ionizations</option><option value="exc">Excitations</option></select></label></div>
+      </div>
+
+      <div class="tab" id="tab-dose" hidden>
+        <div class="card"><div class="ch"><h3>Energy deposited vs depth</h3><span class="muted sm" id="d-n"></span></div>
+          <canvas id="cv-dose" class="cv" height="220" aria-label="Depth-dose curve"></canvas>
+          <p class="hint" id="d-hint"></p></div>
+        <div class="card"><h3>Ionization and excitation</h3><div id="d-ion" class="kvs"></div></div>
+        <div class="card"><h3>Fate of particles and secondaries (all histories)</h3><div id="d-counts" class="counts"></div></div>
+        <div class="row"><button type="button" id="d-reset">Reset tallies</button></div>
+      </div>
+
+      <div class="tab" id="tab-data" hidden>
+        <div class="card"><h3 id="p-title">Interaction data</h3><div id="p-kv" class="kvs"></div></div>
+        <div class="card"><h3>Which process wins at this energy</h3><div id="p-bars" class="bars"></div><p class="hint" id="p-note"></p></div>
+        <div class="card"><h3 id="p-spec-t">Source spectrum</h3><canvas id="cv-spec" class="cv" height="160" aria-label="Energy spectrum of the source"></canvas></div>
+      </div>
+
+      <div class="tab" id="tab-about" hidden><div class="card prose" id="about"></div></div>
+    </section>
+  </main>
+</div>
+
+<script src="js/boot.js"></script>
+</body>
+</html>
